@@ -4,117 +4,118 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Countdown</title>
+
 <style>
-  body {
-    margin: 0;
-    background: #000;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    font-family: sans-serif;
-    color: #fff;
-  }
+body {
+  margin: 0;
+  background: #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-family: sans-serif;
+  color: #fff;
+}
 
-  .countdown {
-    display: flex;
-    gap: 12px;
-  }
+.countdown {
+  display: flex;
+  gap: 12px;
+}
 
-  .block {
-    text-align: center;
-  }
+.flip-unit {
+  text-align: center;
+}
 
-  .card {
-    position: relative;
-    width: 90px;
-    height: 120px;
-    background: #111;
-    border-radius: 6px;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 56px;
-    font-weight: 700;
-    color: #fff;
-    border: 2px solid #222;
-    box-shadow: inset 0 0 10px #000, 0 5px 20px rgba(0,0,0,0.6);
-  }
+.label {
+  margin-top: 6px;
+  font-size: 13px;
+  color: #ccc;
+}
 
-  .label {
-    font-size: 14px;
-    margin-top: 8px;
-    color: #ccc;
-  }
+.flip-card {
+  position: relative;
+  width: 90px;
+  height: 120px;
+  perspective: 1200px;
+}
 
-  .flip {
-    position: absolute;
-    width: 100%;
-    height: 50%;
-    left: 0;
-    background: #111;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    backface-visibility: hidden;
-  }
+.top, .bottom, .flip-top, .flip-bottom {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 50%;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 60px;
+  font-weight: 700;
+  color: #fff;
+  background: #111;
+  border: 2px solid #222;
+  box-shadow: inset 0 0 10px #000, 0 5px 20px rgba(0,0,0,0.6);
+}
 
-  .top { top: 0; border-bottom: 1px solid #333; }
-  .bottom { bottom: 0; border-top: 1px solid #333; }
+.top { top: 0; border-bottom: 1px solid #333; }
+.bottom { bottom: 0; border-top: 1px solid #333; }
 
-  .flip-top {
-    animation: flipTop .4s forwards;
-    transform-origin: bottom;
-  }
+.top span, .bottom span, .flip-top span, .flip-bottom span {
+  transform: translateY(10%);
+}
 
-  .flip-bottom {
-    animation: flipBottom .4s forwards;
-    transform-origin: top;
-  }
+.flip-top {
+  animation: flipTop 0.4s forwards;
+  transform-origin: bottom;
+  z-index: 3;
+}
 
-  @keyframes flipTop {
-    0% { transform: rotateX(0); }
-    100% { transform: rotateX(-90deg); }
-  }
+.flip-bottom {
+  animation: flipBottom 0.4s forwards;
+  transform-origin: top;
+  z-index: 2;
+}
 
-  @keyframes flipBottom {
-    0% { transform: rotateX(90deg); }
-    100% { transform: rotateX(0); }
-  }
+@keyframes flipTop {
+  0% { transform: rotateX(0); }
+  100% { transform: rotateX(-90deg); }
+}
+
+@keyframes flipBottom {
+  0% { transform: rotateX(90deg); }
+  100% { transform: rotateX(0); }
+}
 </style>
 </head>
-<body>
 
+<body>
 <div class="countdown">
-  <div class="block" data-unit="days">
-    <div class="card">
-      <div class="top flip"><span>00</span></div>
+  <div class="flip-unit" data-unit="days">
+    <div class="flip-card">
+      <div class="top"><span>00</span></div>
       <div class="bottom"><span>00</span></div>
     </div>
     <div class="label">DAY</div>
   </div>
 
-  <div class="block" data-unit="hours">
-    <div class="card">
-      <div class="top flip"><span>00</span></div>
+  <div class="flip-unit" data-unit="hours">
+    <div class="flip-card">
+      <div class="top"><span>00</span></div>
       <div class="bottom"><span>00</span></div>
     </div>
     <div class="label">HOUR</div>
   </div>
 
-  <div class="block" data-unit="minutes">
-    <div class="card">
-      <div class="top flip"><span>00</span></div>
+  <div class="flip-unit" data-unit="minutes">
+    <div class="flip-card">
+      <div class="top"><span>00</span></div>
       <div class="bottom"><span>00</span></div>
     </div>
     <div class="label">MINUTES</div>
   </div>
 
-  <div class="block" data-unit="seconds">
-    <div class="card">
-      <div class="top flip"><span>00</span></div>
+  <div class="flip-unit" data-unit="seconds">
+    <div class="flip-card">
+      <div class="top"><span>00</span></div>
       <div class="bottom"><span>00</span></div>
     </div>
     <div class="label">SECONDS</div>
@@ -122,11 +123,39 @@
 </div>
 
 <script>
-const targetDate = new Date("2026-01-10T00:00:00+05:30");
+const target = new Date("2026-01-10T00:00:00+05:30");
 
-function update() {
-  const now = new Date();
-  let diff = Math.max(0, targetDate - now) / 1000;
+function updateDigit(unit, val) {
+  const el = document.querySelector(`[data-unit="${unit}"]`);
+  const top = el.querySelector('.top span');
+  const bottom = el.querySelector('.bottom span');
+
+  if (top.textContent === val) return;
+
+  const flipTop = document.createElement('div');
+  flipTop.className = 'flip-top';
+  flipTop.innerHTML = `<span>${top.textContent}</span>`;
+
+  const flipBottom = document.createElement('div');
+  flipBottom.className = 'flip-bottom';
+  flipBottom.innerHTML = `<span>${val}</span>`;
+
+  el.querySelector('.flip-card').appendChild(flipTop);
+  el.querySelector('.flip-card').appendChild(flipBottom);
+
+  flipTop.addEventListener('animationend', () => {
+    top.textContent = val;
+    flipTop.remove();
+  });
+
+  flipBottom.addEventListener('animationend', () => {
+    bottom.textContent = val;
+    flipBottom.remove();
+  });
+}
+
+function tick() {
+  let diff = Math.max(0, target - new Date()) / 1000;
 
   let d = String(Math.floor(diff / 86400)).padStart(2, "0");
   diff %= 86400;
@@ -135,43 +164,14 @@ function update() {
   let m = String(Math.floor(diff / 60)).padStart(2, "0");
   let s = String(Math.floor(diff % 60)).padStart(2, "0");
 
-  setUnit("days", d);
-  setUnit("hours", h);
-  setUnit("minutes", m);
-  setUnit("seconds", s);
+  updateDigit("days", d);
+  updateDigit("hours", h);
+  updateDigit("minutes", m);
+  updateDigit("seconds", s);
 }
 
-function setUnit(unit, value) {
-  const block = document.querySelector(`[data-unit="${unit}"]`);
-  const top = block.querySelector(".top span");
-  const bottom = block.querySelector(".bottom span");
-
-  if (top.textContent !== value) {
-    const flipTop = document.createElement("div");
-    flipTop.className = "flip top flip-top";
-    flipTop.innerHTML = `<span>${top.textContent}</span>`;
-
-    const flipBottom = document.createElement("div");
-    flipBottom.className = "flip bottom flip-bottom";
-    flipBottom.innerHTML = `<span>${value}</span>`;
-
-    block.querySelector(".card").appendChild(flipTop);
-    block.querySelector(".card").appendChild(flipBottom);
-
-    flipTop.addEventListener("animationend", () => {
-      top.textContent = value;
-      flipTop.remove();
-    });
-
-    flipBottom.addEventListener("animationend", () => {
-      bottom.textContent = value;
-      flipBottom.remove();
-    });
-  }
-}
-
-setInterval(update, 1000);
-update();
+setInterval(tick, 1000);
+tick();
 </script>
 
 </body>
