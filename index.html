@@ -91,7 +91,14 @@ const target = new Date("2025-01-10T10:45:00+05:30");
 
 function update() {
   const now = new Date();
-  let diff = Math.max(0, (target - now) / 1000);
+  let diff = (target - now) / 1000;
+
+  let countingUp = false;
+
+  if (diff < 0) {
+    diff = (now - target) / 1000; // count up
+    countingUp = true;
+  }
 
   const d = String(Math.floor(diff / 86400)).padStart(2, "0");
   diff %= 86400;
@@ -104,6 +111,14 @@ function update() {
   document.getElementById("hours").textContent = h;
   document.getElementById("minutes").textContent = m;
   document.getElementById("seconds").textContent = s;
+
+  // Change labels when counting up (optional)
+  if (countingUp) {
+    document.querySelectorAll(".label")[0].textContent = "DAYS";
+    document.querySelectorAll(".label")[1].textContent = "HRS";
+    document.querySelectorAll(".label")[2].textContent = "MINS";
+    document.querySelectorAll(".label")[3].textContent = "SECS";
+  }
 }
 
 setInterval(update, 1000);
