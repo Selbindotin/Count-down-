@@ -3,121 +3,85 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Countdown</title>
+<title>Wedding Countdown</title>
 
 <style>
-body {
-  margin: 0;
-  background: #000;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  font-family: sans-serif;
-  color: #fff;
-}
+  body {
+    margin: 0;
+    background: #000;
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    font-family: Arial, Helvetica, sans-serif;
+  }
 
-.countdown {
-  display: flex;
-  gap: 12px;
-}
+  .countdown {
+    display: flex;
+    gap: 14px;
+  }
 
-.flip-unit {
-  text-align: center;
-}
+  .unit {
+    text-align: center;
+  }
 
-.label {
-  margin-top: 6px;
-  font-size: 13px;
-  color: #ccc;
-}
+  .box {
+    background: linear-gradient(145deg, #0d0d0d, #1c1c1c);
+    width: 90px;
+    height: 110px;
+    border-radius: 14px;
+    border: 1px solid #2a2a2a;
+    box-shadow:
+      inset 0 0 25px rgba(255,255,255,0.05),
+      0 6px 25px rgba(0,0,0,0.9),
+      0 0 35px rgba(255, 87, 188, 0.3);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 
-.flip-card {
-  position: relative;
-  width: 90px;
-  height: 120px;
-  perspective: 1200px;
-}
+  .value {
+    font-size: 50px;
+    font-weight: 900;
+    letter-spacing: -1px;
+    color: #ff3e9e;
+    text-shadow:
+      0 0 14px rgba(255, 62, 158, 0.8),
+      0 0 35px rgba(255, 62, 158, 0.45),
+      0 0 60px rgba(255, 62, 158, 0.25);
+  }
 
-.top, .bottom, .flip-top, .flip-bottom {
-  position: absolute;
-  left: 0;
-  width: 100%;
-  height: 50%;
-  overflow: hidden;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 60px;
-  font-weight: 700;
-  color: #fff;
-  background: #111;
-  border: 2px solid #222;
-  box-shadow: inset 0 0 10px #000, 0 5px 20px rgba(0,0,0,0.6);
-}
-
-.top { top: 0; border-bottom: 1px solid #333; }
-.bottom { bottom: 0; border-top: 1px solid #333; }
-
-.top span, .bottom span, .flip-top span, .flip-bottom span {
-  transform: translateY(10%);
-}
-
-.flip-top {
-  animation: flipTop 0.4s forwards;
-  transform-origin: bottom;
-  z-index: 3;
-}
-
-.flip-bottom {
-  animation: flipBottom 0.4s forwards;
-  transform-origin: top;
-  z-index: 2;
-}
-
-@keyframes flipTop {
-  0% { transform: rotateX(0); }
-  100% { transform: rotateX(-90deg); }
-}
-
-@keyframes flipBottom {
-  0% { transform: rotateX(90deg); }
-  100% { transform: rotateX(0); }
-}
+  .label {
+    font-size: 13px;
+    margin-top: 6px;
+    font-weight: 500;
+    color: #ffc7e9;
+    letter-spacing: 1px;
+  }
 </style>
 </head>
 
 <body>
+
 <div class="countdown">
-  <div class="flip-unit" data-unit="days">
-    <div class="flip-card">
-      <div class="top"><span>00</span></div>
-      <div class="bottom"><span>00</span></div>
-    </div>
+  <div class="unit">
+    <div class="box"><span id="days" class="value">00</span></div>
     <div class="label">DAY</div>
   </div>
 
-  <div class="flip-unit" data-unit="hours">
-    <div class="flip-card">
-      <div class="top"><span>00</span></div>
-      <div class="bottom"><span>00</span></div>
-    </div>
+  <div class="unit">
+    <div class="box"><span id="hours" class="value">00</span></div>
     <div class="label">HOUR</div>
   </div>
 
-  <div class="flip-unit" data-unit="minutes">
-    <div class="flip-card">
-      <div class="top"><span>00</span></div>
-      <div class="bottom"><span>00</span></div>
-    </div>
+  <div class="unit">
+    <div class="box"><span id="minutes" class="value">00</span></div>
     <div class="label">MINUTES</div>
   </div>
 
-  <div class="flip-unit" data-unit="seconds">
-    <div class="flip-card">
-      <div class="top"><span>00</span></div>
-      <div class="bottom"><span>00</span></div>
-    </div>
+  <div class="unit">
+    <div class="box"><span id="seconds" class="value">00</span></div>
     <div class="label">SECONDS</div>
   </div>
 </div>
@@ -125,53 +89,25 @@ body {
 <script>
 const target = new Date("2026-01-10T00:00:00+05:30");
 
-function updateDigit(unit, val) {
-  const el = document.querySelector(`[data-unit="${unit}"]`);
-  const top = el.querySelector('.top span');
-  const bottom = el.querySelector('.bottom span');
+function update() {
+  const now = new Date();
+  let diff = Math.max(0, (target - now) / 1000);
 
-  if (top.textContent === val) return;
-
-  const flipTop = document.createElement('div');
-  flipTop.className = 'flip-top';
-  flipTop.innerHTML = `<span>${top.textContent}</span>`;
-
-  const flipBottom = document.createElement('div');
-  flipBottom.className = 'flip-bottom';
-  flipBottom.innerHTML = `<span>${val}</span>`;
-
-  el.querySelector('.flip-card').appendChild(flipTop);
-  el.querySelector('.flip-card').appendChild(flipBottom);
-
-  flipTop.addEventListener('animationend', () => {
-    top.textContent = val;
-    flipTop.remove();
-  });
-
-  flipBottom.addEventListener('animationend', () => {
-    bottom.textContent = val;
-    flipBottom.remove();
-  });
-}
-
-function tick() {
-  let diff = Math.max(0, target - new Date()) / 1000;
-
-  let d = String(Math.floor(diff / 86400)).padStart(2, "0");
+  const d = String(Math.floor(diff / 86400)).padStart(2, "0");
   diff %= 86400;
-  let h = String(Math.floor(diff / 3600)).padStart(2, "0");
+  const h = String(Math.floor(diff / 3600)).padStart(2, "0");
   diff %= 3600;
-  let m = String(Math.floor(diff / 60)).padStart(2, "0");
-  let s = String(Math.floor(diff % 60)).padStart(2, "0");
+  const m = String(Math.floor(diff / 60)).padStart(2, "0");
+  const s = String(Math.floor(diff % 60)).padStart(2, "0");
 
-  updateDigit("days", d);
-  updateDigit("hours", h);
-  updateDigit("minutes", m);
-  updateDigit("seconds", s);
+  document.getElementById("days").textContent = d;
+  document.getElementById("hours").textContent = h;
+  document.getElementById("minutes").textContent = m;
+  document.getElementById("seconds").textContent = s;
 }
 
-setInterval(tick, 1000);
-tick();
+setInterval(update, 1000);
+update();
 </script>
 
 </body>
