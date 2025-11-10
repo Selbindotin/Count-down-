@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Wedding Day Counter — Jan 10, 2026</title>
+<style>
+  :root{
+    --bg: #0b0f14;
+    --bg2:#0e141b;
+    --fg: #e8eef7;
+    --muted:#9fb3c8;
+    --accent:#7cc7ff;
+    --glass: rgba(255,255,255,0.06);
+    --card-shadow: 0 10px 30px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,0.04);
+    --radius: 18px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji","Segoe UI Emoji", "Segoe UI Symbol";
+    color:var(--fg);
+    background: radial-gradient(1200px 800px at 80% -10%, #182333, transparent 60%), radial-gradient(1000px 700px at -10% 110%, #18202b, transparent 60%), linear-gradient(180deg, var(--bg), var(--bg2));
+    display:flex; align-items:center; justify-content:center;
+    padding: clamp(16px, 4vw, 40px);
+  }
+
+  .wrap{
+    width: min(960px, 100%);
+  }
+
+  header{
+    text-align:center;
+    margin-bottom: clamp(18px, 3vw, 28px);
+  }
+  .title{
+    font-size: clamp(22px, 6vw, 42px);
+    font-weight: 800;
+    letter-spacing:.3px;
+    margin:0 0 8px;
+    text-shadow: 0 2px 20px rgba(0,0,0,.35);
+  }
+  .subtitle{
+    margin:0;
+    color:var(--muted);
+    font-size: clamp(13px, 3.5vw, 16px);
+  }
+
+  /* Countdown grid */
+  .grid{
+    display:grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: clamp(10px, 2.5vw, 16px);
+  }
+  @media (max-width:720px){
+    .grid{ grid-template-columns: repeat(2, 1fr); }
+  }
+
+  /* Flip card */
+  .unit{
+    position:relative;
+  }
+  .label{
+    text-align:center;
+    margin:10px 0 0;
+    font-size: clamp(11px, 2.8vw, 13px);
+    text-transform: uppercase;
+    letter-spacing: .18em;
+    color: var(--muted);
+  }
+
+  .flip{
+    position:relative;
+    perspective: 1000px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .card{
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius: var(--radius);
+    background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+    box-shadow: var(--card-shadow);
+    overflow:hidden;
+    height: clamp(90px, 22vw, 170px);
+  }
+
+  .digit{
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+    font-weight: 800;
+    font-size: clamp(36px, 14vw, 96px);
+    line-height: 1;
+    letter-spacing: .02em;
+    text-shadow: 0 4px 22px rgba(0,0,0,.55);
+  }
+
+  /* split halves for flip animation */
+  .top, .bottom, .top-flip, .bottom-flip{
+    position:absolute;
+    left:0; right:0;
+    padding: 0 clamp(8px, 2.5vw, 14px);
+    display:flex; align-items:center; justify-content:center;
+    backface-visibility: hidden;
+  }
+  .top, .top-flip{
+    top:0; height:50%;
+    border-top-left-radius: var(--radius);
+    border-top-right-radius: var(--radius);
+    background: linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0.03));
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .bottom, .bottom-flip{
+    bottom:0; height:50%;
+    border-bottom-left-radius: var(--radius);
+    border-bottom-right-radius: var(--radius);
+    background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.10));
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+
+  /* flipping animations */
+  .top-flip{
+    transform-origin: center bottom;
+    transform: rotateX(0);
+    animation: flipTop .6s ease-in forwards;
+  }
+  .bottom-flip{
+    transform-origin: center top;
+    transform: rotateX(90deg);
+    animation: flipBottom .6s ease-out .6s forwards;
+  }
+  @keyframes flipTop{
+    0%{ transform: rotateX(0); }
+    100%{ transform: rotateX(-90deg); }
+  }
+  @keyframes flipBottom{
+    0%{ transform: rotateX(90deg); }
+    100%{ transform: rotateX(0); }
+  }
+
+  /* chrome line */
+  .shine{
+    position:absolute; inset:0;
+    background: radial-gradient(500px 50px at 50% 10%, rgba(255,255,255,.10), transparent 60%),
+                radial-gradient(600px 60px at 50% 90%, rgba(255,255,255,.06), transparent 60%);
+    pointer-events:none;
+  }
+
+  /* header controls */
+  .controls{
+    margin-top: 14px;
+    display:flex; gap:10px; justify-content:center; flex-wrap:wrap;
+  }
+  button.toggle{
+    appearance:none; border:none; cursor:pointer;
+    padding:10px 14px; border-radius: 999px;
+    background: var(--glass);
+    color: var(--fg);
+    box-shadow: var(--card-shadow);
+    font-weight:600; letter-spacing:.02em;
+  }
+  button.toggle:active{ transform: translateY(1px); }
+  .muted-dot{ display:inline-block; width:8px; height:8px; border-radius:999px; margin-left:8px; background:#f66; box-shadow:0 0 12px rgba(255,80,80,.6);}
+  .muted .muted-dot{ background:#67f38a; box-shadow:0 0 12px rgba(80,255,150,.5); }
+
+  footer{
+    margin-top: 18px;
+    text-align:center; color:var(--muted);
+    font-size: 12px;
+    opacity:.85;
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1 class="title">Wedding Day Counter</h1>
+      <p class="subtitle">Counting down to <strong>January 10, 2026</strong> (IST)</p>
+      <div class="controls">
+        <button id="soundBtn" class="toggle muted" aria-pressed="true" aria-label="Toggle sound">
+          Sound <span class="muted-dot" aria-hidden="true"></span>
+        </button>
+        <button id="vibrateBtn" class="toggle" aria-label="Test haptic">Haptic Test</button>
+      </div>
+    </header>
+
+    <section class="grid" aria-live="polite" aria-label="Countdown timer">
+      <div class="unit" data-unit="days">
+        <div class="flip card" role="group" aria-label="Days">
+          <div class="top"><span class="digit">0</span></div>
+          <div class="bottom"><span class="digit">0</span></div>
+          <div class="shine"></div>
+        </div>
+        <div class="label">Days</div>
+      </div>
+
+      <div class="unit" data-unit="hours">
+        <div class="flip card" role="group" aria-label="Hours">
+          <div class="top"><span class="digit">0</span></div>
+          <div class="bottom"><span class="digit">0</span></div>
+          <div class="shine"></div>
+        </div>
+        <div class="label">Hours</div>
+      </div>
+
+      <div class="unit" data-unit="minutes">
+        <div class="flip card" role="group" aria-label="Minutes">
+          <div class="top"><span class="digit">0</span></div>
+          <div class="bottom"><span class="digit">0</span></div>
+          <div class="shine"></div>
+        </div>
+        <div class="label">Minutes</div>
+      </div>
+
+      <div class="unit" data-unit="seconds">
+        <div class="flip card" role="group" aria-label="Seconds">
+          <div class="top"><span class="digit">0</span></div>
+          <div class="bottom"><span class="digit">0</span></div>
+          <div class="shine"></div>
+        </div>
+        <div class="label">Seconds</div>
+      </div>
+    </section>
+
+    <footer>
+      Tip: add this to your phone’s home screen for quick access. ✨
+    </footer>
+  </div>
+
+<script>
+/* ===== Config ===== */
+const TARGET_DATE = new Date('2026-01-10T00:00:00+05:30'); // Jan 10, 2026 at 00:00 IST
+const ENABLE_TICK_BY_DEFAULT = true;
+
+/* ===== Audio (no external files; WebAudio synth) ===== */
+class Sound {
+  constructor() {
+    this.ctx = null;
+    this.enabled = ENABLE_TICK_BY_DEFAULT;
+  }
+  ensureContext() {
+    if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  tick() {
+    if (!this.enabled) return;
+    this.ensureContext();
+    const duration = 0.07;
+    const now = this.ctx.currentTime;
+    const o = this.ctx.createOscillator();
+    const g = this.ctx.createGain();
+    o.type = 'triangle';
+    o.frequency.setValueAtTime(880, now);
+    g.gain.setValueAtTime(0.0001, now);
+    g.gain.exponentialRampToValueAtTime(0.05, now + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+    o.connect(g).connect(this.ctx.destination);
+    o.start(now); o.stop(now + duration);
+  }
+  chime() {
+    if (!this.enabled) return;
+    this.ensureContext();
+    const now = this.ctx.currentTime;
+    const notes = [523.25, 659.25, 783.99, 1046.50]; // C5 E5 G5 C6
+    notes.forEach((f, i) => {
+      const o = this.ctx.createOscillator();
+      const g = this.ctx.createGain();
+      o.type='sine';
+      o.frequency.value = f;
+      const t0 = now + i*0.18;
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.exponentialRampToValueAtTime(0.12, t0 + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.35);
+      o.connect(g).connect(this.ctx.destination);
+      o.start(t0); o.stop(t0 + 0.5);
+    });
+  }
+}
+const sound = new Sound();
+
+/* ===== Haptics (mobile) ===== */
+function haptic(ms=30){ if (navigator.vibrate) navigator.vibrate(ms); }
+
+/* ===== Flip animation per unit ===== */
+function makeFlipper(unitEl){
+  const top = unitEl.querySelector('.top .digit');
+  const bottom = unitEl.querySelector('.bottom .digit');
+  let currentValue = '--';
+
+  function setImmediate(val){
+    currentValue = val;
+    top.textContent = val;
+    bottom.textContent = val;
+  }
+
+  function flipTo(nextVal){
+    if (nextVal === currentValue) return;
+    const flip = unitEl.querySelector('.flip.card');
+
+    // Create the flipping halves with previous and next values
+    const topFlip = document.createElement('div');
+    topFlip.className = 'top-flip';
+    const topFlipSpan = document.createElement('span');
+    topFlipSpan.className = 'digit';
+    topFlipSpan.textContent = currentValue;
+    topFlip.appendChild(topFlipSpan);
+
+    const bottomFlip = document.createElement('div');
+    bottomFlip.className = 'bottom-flip';
+    const bottomFlipSpan = document.createElement('span');
+    bottomFlipSpan.className = 'digit';
+    bottomFlipSpan.textContent = nextVal;
+    bottomFlip.appendChild(bottomFlipSpan);
+
+    // When top finishes, update top text to next
+    topFlip.addEventListener('animationend', () => {
+      top.textContent = nextVal;
+    }, {once:true});
+
+    // When bottom finishes, set bottom to next and cleanup
+    bottomFlip.addEventListener('animationend', () => {
+      bottom.textContent = nextVal;
+      topFlip.remove(); bottomFlip.remove();
+    }, {once:true});
+
+    flip.appendChild(topFlip);
+    flip.appendChild(bottomFlip);
+
+    currentValue = nextVal;
+  }
+
+  return { setImmediate, flipTo, get value(){ return currentValue; } };
+}
+
+/* ===== Timer ===== */
+const dom = {
+  days:   makeFlipper(document.querySelector('[data-unit="days"]')),
+  hours:  makeFlipper(document.querySelector('[data-unit="hours"]')),
+  minutes:makeFlipper(document.querySelector('[data-unit="minutes"]')),
+  seconds:makeFlipper(document.querySelector('[data-unit="seconds"]')),
+  soundBtn: document.getElementById('soundBtn'),
+  vibrateBtn: document.getElementById('vibrateBtn'),
+};
+
+function pad2(n){ return String(n).padStart(2,'0'); }
+
+function diffParts(ms){
+  let t = Math.max(0, Math.floor(ms/1000));
+  const days = Math.floor(t / 86400); t -= days*86400;
+  const hours = Math.floor(t / 3600); t -= hours*3600;
+  const minutes = Math.floor(t / 60); t -= minutes*60;
+  const seconds = t;
+  return {days, hours, minutes, seconds};
+}
+
+let completed = false;
+function render(parts, initial=false){
+  const d = String(parts.days);
+  const h = pad2(parts.hours);
+  const m = pad2(parts.minutes);
+  const s = pad2(parts.seconds);
+
+  if (initial){
+    dom.days.setImmediate(d);
+    dom.hours.setImmediate(h);
+    dom.minutes.setImmediate(m);
+    dom.seconds.setImmediate(s);
+    return;
+  }
+
+  if (dom.days.value !== d) dom.days.flipTo(d);
+  if (dom.hours.value !== h){ dom.hours.flipTo(h); sound.tick(); }
+  if (dom.minutes.value !== m){ dom.minutes.flipTo(m); }
+  if (dom.seconds.value !== s){ dom.seconds.flipTo(s); sound.tick(); }
+}
+
+function loop(){
+  const now = new Date();
+  const ms = TARGET_DATE - now;
+  if (ms <= 0){
+    if (!completed){
+      completed = true;
+      finalCelebrate();
+    }
+    render({days:0,hours:0,minutes:0,seconds:0});
+    return; // stop ticking once reached
+  }
+  render(diffParts(ms));
+  requestAnimationFrame(scheduleNext);
+}
+let nextTickAt = 0;
+function scheduleNext(){
+  const now = performance.now();
+  // Aim to update close to each whole second
+  if (nextTickAt === 0) nextTickAt = now;
+  nextTickAt += 1000;
+  const delay = Math.max(0, nextTickAt - now);
+  setTimeout(loop, delay);
+}
+
+/* Celebration: chime + confetti-lite (no library) */
+function finalCelebrate(){
+  sound.chime();
+  haptic(80);
+  // Quick, lightweight confetti using emojis
+  const pieces = 80;
+  for (let i=0;i<pieces;i++){
+    const s = document.createElement('div');
+    s.textContent = ['💖','✨','🎉','💍','🌸'][Math.floor(Math.random()*5)];
+    const size = Math.random()*18 + 14;
+    s.style.position='fixed';
+    s.style.left = (Math.random()*100)+'vw';
+    s.style.top = '-10vh';
+    s.style.fontSize = size+'px';
+    s.style.filter = 'drop-shadow(0 6px 10px rgba(0,0,0,.35))';
+    s.style.zIndex = 9999;
+    document.body.appendChild(s);
+    const duration = 4000 + Math.random()*3000;
+    s.animate([
+      { transform: `translateY(0) rotate(0deg)` },
+      { transform: `translateY(120vh) rotate(${(Math.random()*720-360)}deg)` }
+    ], { duration, easing: 'cubic-bezier(.2,.7,.2,1)' }).addEventListener('finish', ()=> s.remove());
+  }
+}
+
+/* Controls */
+dom.soundBtn.addEventListener('click', ()=>{
+  sound.enabled = !sound.enabled;
+  dom.soundBtn.classList.toggle('muted', sound.enabled);
+  dom.soundBtn.setAttribute('aria-pressed', sound.enabled ? 'true':'false');
+  // resume audio context if user re-enables
+  if (sound.enabled && sound.ctx && sound.ctx.state === 'suspended') sound.ctx.resume();
+});
+dom.vibrateBtn.addEventListener('click', ()=> haptic(40));
+
+/* Init */
+render(diffParts(TARGET_DATE - new Date()), true);
+scheduleNext();
+
+// Wake lock optional: keep screen on while viewing (best effort)
+let wakeLock = null;
+async function requestWakeLock() {
+  try {
+    if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen');
+  } catch(e){ /* noop */ }
+}
+document.addEventListener('visibilitychange', () => {
+  if (wakeLock && document.visibilityState === 'visible') requestWakeLock();
+});
+requestWakeLock();
+</script>
+</body>
+</html>
